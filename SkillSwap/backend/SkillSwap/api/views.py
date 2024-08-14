@@ -13,6 +13,14 @@ def apiOverview(request):
     api_urls = {
         'Register': '/register/',
         'Login': '/login/',
+        'Logout': '/logout',
+        'Profile': '/profile/',
+        'Change Password': '/change-password/',
+        'Add Skill': '/add-skill/',
+        'Delete Skill': '/delete-skill/<str:pk>/',
+        'Add Experience': '/add-experience/',
+        'Delete Experience': '/delete-experience/<str:pk>/',
+        'Update Profile Image': '/update-profile-iamge/',
     }
     return Response(api_urls)
 
@@ -23,7 +31,11 @@ def regester(request):
     user = RegisterSerializer(data=request.data)
     if user.is_valid():
         user.save()
-        return Response(user.data, status=status.HTTP_201_CREATED)
+        data = user.data
+        refresh = RefreshToken.for_user(user.instance)
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        return Response(data, status=status.HTTP_201_CREATED)
     return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

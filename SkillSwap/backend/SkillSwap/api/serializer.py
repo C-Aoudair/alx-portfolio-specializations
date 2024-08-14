@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'profileimage_url', 'experiences', 'skills', 'password']
+        fields = ['id', 'username', 'email', 'profileimage_url', 'experiences', 'skills', 'password']
         depth = 1
     
     def create(self, validated_data):
@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
             return User.objects.create_user(
                 username=validated_data['username'],
                 profileimage_url=validated_data['profileimage_url'],
+                email=validated_data['email'],
                 password=validated_data['password']
             )
         except ValidationError as e:
@@ -38,29 +39,35 @@ class SkillSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    profileimage_url = serializers.URLField(read_only=True)
+    experiences = ExperienceSerializer(many=True, read_only=True)
+    skills = SkillSerializer(many=True, read_only=True)
     class Meta:
         model = User
-        fields = ['username', 'password']
+        fields = ['username','email', 'password', 'profileimage_url', 'experiences', 'skills']
     
     def create(self, validated_data):
         return User.objects.create_user(
             username=validated_data['username'],
+            email=validated_data['email'],
             password=validated_data['password']
         )
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    email = serializers.EmailField()
     password = serializers.CharField()
     
     def validate(self, data):
-        username = data.get('username')
+        email = data.get('email')
         password = data.get('password')
 
-        if not User.objects.filter(username=username).exists():
+        user = User.objects.filter(email=email).first()
+
+        if not user:
             raise serializers.ValidationError({'error': 'User not found'})
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(username=user.username, password=password)
         if user is None:
             raise serializers.ValidationError({'error': 'Incorrect password'})
 
