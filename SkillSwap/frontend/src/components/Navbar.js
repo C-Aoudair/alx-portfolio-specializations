@@ -1,4 +1,3 @@
-import './test.css'
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, InputBase, Avatar, Box } from '@mui/material';
 import { Chat } from '@mui/icons-material';
