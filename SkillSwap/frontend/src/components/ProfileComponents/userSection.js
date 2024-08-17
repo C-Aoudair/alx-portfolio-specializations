@@ -16,10 +16,11 @@ import {
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-const UserSection = () => {
-  const [username, setUsername] = useState("");
-  const [rating] = useState(4.5);
-  const [profileImage] = useState(null);
+const UserSection = ({ user }) => {
+  const [username, setUsername] = useState(user.username);
+  const [email, setEmail] = useState(user.email);
+  const [rating] = useState(user.rating || 4.5);
+  const [profileImage] = useState(user.profileImage);
 
   const [openSettings, setOpenSettings] = useState(false);
 
@@ -63,7 +64,8 @@ const UserSection = () => {
             fullWidth
             label="Email"
             variant="outlined"
-            defaultValue="johndoe@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             sx={{ mb: 2 }}
           />
         </DialogContent>

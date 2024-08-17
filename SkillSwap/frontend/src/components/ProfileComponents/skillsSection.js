@@ -16,39 +16,51 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-const SkillsSection = () => {
-  const [skills, setSkills] = useState([]);
+const SkillsSection = ({ user }) => {
+  const [skills, setSkills] = useState(user.skills || []);
 
   const [newSkill, setNewSkill] = useState("");
   const [openSkillForm, setOpenSkillForm] = useState(false);
 
   const handleOpenSkillForm = () => setOpenSkillForm(true);
-  const handleCloseSkillForm = () => setOpenSkillForm(false);
+  const handleCloseSkillForm = () => {
+    setOpenSkillForm(false);
+    setNewSkill("");
+  }
 
-  const handleAddSkill = () => {
+  const handleAddSkill = async () => {
     if (newSkill.trim()) {
-      fetch("https://localhost:8000/api/add-skill", {
+      const response = await fetch("https://localhost:8000/api/add-skill", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ skill: newSkill }),
-      })
-        .then((Response) => Response.json())
-        .then((data) => {
-          setSkills([...skills, data]);
-          setNewSkill("");
-          handleCloseSkillForm();
-        })
-        .catch((error) => {
-          alert("An error occurred. Please try again later.");
-          handleCloseSkillForm();
-        });
+      });
+      
+      if (response.ok) {
+        const addedSkill = await response.json();
+        setSkills([...skills, addedSkill]);
+      } else {
+        alert("something goes wrong, try again");
+      }
+      setNewSkill("");
+      handleCloseSkillForm();
     }
   };
 
-  const handleRemoveSkill = (index) => {
-    setSkills(skills.filter((_, i) => i !== index));
+  const handleRemoveSkill = async (id) => {
+    const response = await fetch(`http://localhost:8000/api/remove-skill/${id}` , {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    if (response.ok) {
+      setSkills(skills.filter((skill) => skill.id !== index));
+    } else {
+      alert('something went wrong, try again');
+    }
   };
 
   return (
@@ -68,14 +80,14 @@ const SkillsSection = () => {
           </IconButton>
         </Box>
         <Grid container spacing={1}>
-          {skills.map((skill, index) => (
-            <Grid item key={index}>
+          {skills.map((skill) => (
+            <Grid item key={skill.id}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <Typography variant="body1">{skill}</Typography>
+                <Typography variant="body1">{skill.name}</Typography>
                 <IconButton
                   color="secondary"
                   size="small"
-                  onClick={() => handleRemoveSkill(index)}
+                  onClick={() => handleRemoveSkill(skill.id)}
                 >
                   <DeleteIcon />
                 </IconButton>
