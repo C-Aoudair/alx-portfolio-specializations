@@ -5,10 +5,9 @@ from .models import *
 
 
 class UserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'profileimage_url', 'experiences', 'skills', 'password']
+        fields = ['id', 'username', 'email', 'profileimage_url', 'experiences', 'skills']
         depth = 1
     
     def create(self, validated_data):
@@ -34,17 +33,14 @@ class SkillSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     class Meta:
         model = Skill
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'user']
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    profileimage_url = serializers.URLField(read_only=True)
-    experiences = ExperienceSerializer(many=True, read_only=True)
-    skills = SkillSerializer(many=True, read_only=True)
     class Meta:
         model = User
-        fields = ['username','email', 'password', 'profileimage_url', 'experiences', 'skills']
+        fields = ['username','email', 'password']
     
     def create(self, validated_data):
         return User.objects.create_user(
@@ -72,3 +68,11 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError({'error': 'Incorrect password'})
 
         return user
+    
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'profileimage_url', 'experiences', 'skills']
+        depth = 1
+        read_only_fields = ['id', 'username', 'email', 'profileimage_url', 'experiences', 'skills']

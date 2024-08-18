@@ -28,14 +28,15 @@ def apiOverview(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def regester(request):
-    user = RegisterSerializer(data=request.data)
-    if user.is_valid():
-        user.save()
-        data = user.data
-        refresh = RefreshToken.for_user(user.instance)
+    serializer = RegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        user = User.objects.get(email=serializer.data['email'])
+        data = ProfileSerializer(user).data
+        refresh = RefreshToken.for_user(user)
         data['refresh'] = str(refresh)
         data['access'] = str(refresh.access_token)
-        return Response(data, status=status.HTTP_201_CREATED)
+        return Response({'data': data}, status=status.HTTP_201_CREATED)
     return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -44,20 +45,14 @@ def regester(request):
 def login(request):
     serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.validated_data
+        user = request.user
+        data = ProfileSerializer(user).data
         refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token)
-        }, status=status.HTTP_200_OK)
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        return Response({'data': data}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def profile(request):
-    user = request.user
-    serializer = UserSerializer(user)
-    return Response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -89,7 +84,7 @@ def add_skill(request):
     skill = SkillSerializer(data=request.data)
     if skill.is_valid():
         skill.save()
-        return Response(skill.data, status=status.HTTP_201_CREATED)
+        return Response({'data': skill.data}, status=status.HTTP_201_CREATED)
     return Response(skill.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
@@ -108,7 +103,7 @@ def add_experience(request):
     experience = ExperienceSerializer(data=request.data)
     if experience.is_valid():
         experience.save()
-        return Response(experience.data, status=status.HTTP_201_CREATED)
+        return Response({'data': experience.data}, status=status.HTTP_201_CREATED)
     return Response(experience.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
