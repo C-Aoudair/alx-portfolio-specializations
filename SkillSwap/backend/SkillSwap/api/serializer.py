@@ -27,13 +27,14 @@ class ExperienceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Experience
         fields = ['id', 'title', 'description', 'years', 'user']
+        write_only_fields = ['user']
 
 
 class SkillSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     class Meta:
         model = Skill
-        fields = ['id', 'name', 'user']
+        fields = ['id', 'name']
 
 
 class RegisterSerializer(serializers.ModelSerializer):
