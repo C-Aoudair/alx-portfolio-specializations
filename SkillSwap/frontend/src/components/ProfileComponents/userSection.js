@@ -17,7 +17,9 @@ import {
 import SettingsIcon from "@mui/icons-material/Settings";
 
 const UserSection = ({ user }) => {
+	console.log(user)
   const [username, setUsername] = useState(user.username);
+console.log(username);
   const [email, setEmail] = useState(user.email);
   const [rating] = useState(user.rating || 4.5);
   const [profileImage] = useState(user.profileImage);

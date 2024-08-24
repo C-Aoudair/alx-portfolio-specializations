@@ -45,38 +45,40 @@ const ExperiencesSection = ({ user }) => {
       const experienceId = newExperience.id;
       if (experienceId) {
         const response = await fetch(
-          `http://localhost:8000/api/update-experience/${experienceId}`,
+          `http://localhost:8000/api/update-experience/${experienceId}/`,
           {
-            method: "POST",
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${localStorage.getItem('access-token')}`,
             },
             body: JSON.stringify({ newExperience }),
           },
         );
 
         if (response.ok) {
-          const experienceData = await response.json();
-          handleDeleteExperience(experienceId);
-          setExperiences([...experiences, experienceData]);
+          const jsonResponse = await response.json();
+          const index = experiences.findIndex((exp) => exp.id === experienceId);
+          experiences[index] = jsonResponse.editedExperience;
         } else {
           alert('something went wrong on editing the experience, try again');
         }
       } else {
         const response = await fetch(
-          "http://localhost:8000/api/add-experience",
+          "http://localhost:8000/api/add-experience/",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "Authorization": `Bearer ${localStorage.getItem('access-token')}`,
             },
             body: JSON.stringify({ title, description, years }),
           },
         );
 
         if (response.ok) {
-          const experienceDate = await response.json();
-          setExperiences([...experiences, experienceDate]);
+          const jsonResponse = await response.json();
+          setExperiences([...experiences, jsonResponse.newExperience]);
         } else {
           alert("something went wrong on adding new experience, try again");
         }
@@ -93,8 +95,22 @@ const ExperiencesSection = ({ user }) => {
     handleOpenExperienceForm();
   };
 
-  const handleDeleteExperience = (id) => {
-    setExperiences(experiences.filter((exp) => exp.id !== id));
+  const handleDeleteExperience = async (id) => {
+    const response = await fetch(`http://localhost:8000/api/delete-experience/${id}/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem('access-token')}`,
+      },
+    });
+
+    if (response.ok) {
+      const newExperiences = experiences.filter((exp) => exp.id !== id);
+      setExperiences(newExperiences);
+    } else {
+      alert("something went wrong on deleting the experience, try again");
+    }
+
   };
 
   return (

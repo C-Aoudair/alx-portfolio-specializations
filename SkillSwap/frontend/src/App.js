@@ -11,6 +11,7 @@ import Signup from './components/Signup';
 function App() {
   return (
     <Router>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Navbar />
       <div style={{ padding: 20 }}>
         <Routes>
@@ -22,6 +23,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/" element={<Login />} />
         </Routes>
+      </div>
       </div>
     </Router>
   );

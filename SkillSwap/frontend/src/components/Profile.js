@@ -6,9 +6,19 @@ import ExperiencesSection from "./ProfileComponents/experiencesSection";
 
 const Profile = () => {
   const location = useLocation();
+  const state = location.state;
 
-  const user = location.state.user;
+  let user = null;
 
+  if (state) {
+    user = state.user;
+  } else {
+    fetch("http://localhost:8000/api/profile/1")
+      .then((response) => response.json())
+      .then((data) => {
+        user = data;
+      });
+  }
 
   return (
     <Box sx={{ p: 4, maxWidth: "800px", margin: "auto" }}>

@@ -30,16 +30,18 @@ const SkillsSection = ({ user }) => {
 
   const handleAddSkill = async () => {
     if (newSkill.trim()) {
-      const response = await fetch("https://localhost:8000/api/add-skill", {
+      const response = await fetch("http://localhost:8000/api/add-skill/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('access-token')}`,
         },
-        body: JSON.stringify({ skill: newSkill }),
+        body: JSON.stringify({ name: newSkill }),
       });
       
       if (response.ok) {
-        const addedSkill = await response.json();
+        const jsonResponse = await response.json();
+        const addedSkill = jsonResponse.newSkill;
         setSkills([...skills, addedSkill]);
       } else {
         alert("something goes wrong, try again");
@@ -50,14 +52,15 @@ const SkillsSection = ({ user }) => {
   };
 
   const handleRemoveSkill = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/remove-skill/${id}` , {
-      method: "POST",
+    const response = await fetch(`http://localhost:8000/api/delete-skill/${id}/` , {
+      method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem('access-token')}`,
       },
     })
     if (response.ok) {
-      setSkills(skills.filter((skill) => skill.id !== index));
+      setSkills(skills.filter((skill) => skill.id !== id));
     } else {
       alert('something went wrong, try again');
     }

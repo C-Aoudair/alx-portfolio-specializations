@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Link, Grid, Box } from '@mui/material';
 import AuthLayout from './AuthLayout';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -52,9 +54,11 @@ const Login = () => {
       });
 
       if (response.status === 200) {
-        const data = await response.json();
-        console.log(data);
-        navigate('/profile', { state: {user: data}, replace: true});
+        const jsonResponse = await response.json();
+        sessionStorage.setItem('userId', jsonResponse.data.id);
+        sessionStorage.setItem('refresh-token', jsonResponse.data.refresh);
+        sessionStorage.setItem('access-token', jsonResponse.data.access);
+        navigate('/profile', { state: {user: jsonResponse.data}, replace: true});
       } else {
         alert('An error occurred. Please try again.');
       }
