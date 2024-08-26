@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
@@ -15,7 +15,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import ProfileOverlay from "./ProfileOverlay";
 
-const SearchResults = () => {
+const SearchResults = ({ user }) => {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -23,27 +23,45 @@ const SearchResults = () => {
 
   const location = useLocation();
   const searchQurey = location.state.searchQuery;
-
-  fetch(`http://localhost:8000/api/search?query=${searchQurey}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("access-token")}`,
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-	    console.log(data);
-	    console.log(data.users);
-      setUsers(data.users);
-      setLoading(false);
-    })
-    .catch((error) => {
-      console.error("Error:", error);
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch(
+        `http://localhost:8000/api/search?query=${searchQurey}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access-token")}`,
+          },
+        },
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  if (loading) {
+    return (
+      <Typography variant="h4" gutterBottom>
+        No Results
+      </Typography>
+    );
+  }
+  const handleChat = async (userId) => {
+    const response = await fetch(`http://localhost:4000/user/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-
-  const handleChat = (userId) => {
-    navigate("/chat/");
+    if (response.ok) {
+      const user = await response.json();
+	    console.log(user);
+      navigate("/chat", { state	: { user } });
+    }
   };
 
   const handleViewProfile = (user) => {
@@ -61,11 +79,11 @@ const SearchResults = () => {
       </Typography>
       <Grid container spacing={3}>
         {(loading ? Array.from(new Array(6)) : users).map((user, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index} mx='auto'>
+          <Grid item xs={12} sm={6} md={4} key={index} mx="auto">
             {user ? (
               <Card
                 sx={{
-		  height: 350,
+                  height: 350,
                   p: 2,
                   display: "flex",
                   flexDirection: "column",
@@ -95,7 +113,7 @@ const SearchResults = () => {
                       sx={{ mb: 1 }}
                     />
                     <Typography variant="body2">Skills:</Typography>
-                    <Box sx={{ mb: 2, height: 75, overflow: 'auto' }}>
+                    <Box sx={{ mb: 2, height: 75, overflow: "auto" }}>
                       {user.skills.map((skill, index) => (
                         <Typography key={index} variant="body2">
                           - {skill.name}
@@ -131,11 +149,11 @@ const SearchResults = () => {
             ) : (
               <Card
                 sx={{
-		  p: 2,
+                  p: 2,
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
-		}}
+                }}
               >
                 <Skeleton
                   variant="circular"

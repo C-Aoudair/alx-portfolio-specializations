@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Link, Grid, Box } from '@mui/material';
 import AuthLayout from './AuthLayout';
 
-const Signup = () => {
+const Signup = ({ setUser }) => {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -66,10 +66,10 @@ const Signup = () => {
 
       if (response.status === 201) {
         const jsonResponse = await response.json();
-        sessionStorage.setItem('userId', jsonResponse.data.id);
-        sessionStorage.setItem('refresh-token', jsonResponse.data.refresh);
-        sessionStorage.setItem('access-token', jsonResponse.data.access);
-        navigate('/profile', { state: {user: jsonResponse.data}, replace: true});
+        localStorage.setItem('refresh-token', jsonResponse.data.refresh);
+        localStorage.setItem('access-token', jsonResponse.data.access);
+        setUser(jsonResponse.data);
+        navigate('/profile', { replace: true});
       } else {
         alert('An error occurred. Please try again.');
       }

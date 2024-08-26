@@ -66,7 +66,7 @@ const Navbar = () => {
         <Box display='flex' alignItems='center'>
           {/* Messages */}
           <NavLink
-            to='/messages'
+            to='/chat'
             style={{ color: 'inherit', marginLeft: '16px' }}
             className={({ isActive }) => {
               return isActive ? 'active-link' : '';

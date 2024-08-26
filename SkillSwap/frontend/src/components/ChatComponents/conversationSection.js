@@ -2,6 +2,26 @@ import React, { useState } from "react";
 import { Box, Avatar, Typography, Paper } from "@mui/material";
 
 const ConversationSection = ({ selectedUser, conversations }) => {
+  if (
+    selectedUser &&
+    (conversations.length === 0 ||
+      !conversations.filter((conversation) =>
+        conversation.ownersId.includes(selectedUser.id),
+      )[0].messages)
+  ) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexGrow: 1,
+        }}
+      >
+        <Typography variant="h5">No messages yet</Typography>
+      </Box>
+    );
+  }
   return (
     <Box sx={{ overflowY: "auto", flexGrow: 1, marginBottom: 2 }}>
       {selectedUser &&
@@ -46,3 +66,8 @@ const ConversationSection = ({ selectedUser, conversations }) => {
 };
 
 export default ConversationSection;
+
+
+/**
+ * you must test now
+ */

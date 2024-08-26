@@ -27,9 +27,9 @@ const MessageInputSection = ({
         ),
       );
 
-      socket.emit(`message_${selectedUser.id}`, {
-        text: newMessage,
-        sender: sessionStorage.getItem("userId"),
+      socket.emit('sendMessage', {
+        id: selectedUser.id,
+        message: newMessage,
       });
 
       setNewMessage("");

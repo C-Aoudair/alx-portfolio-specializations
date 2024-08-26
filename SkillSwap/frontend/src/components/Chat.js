@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Box, Paper } from "@mui/material";
 import io from "socket.io-client";
 
@@ -6,56 +7,73 @@ import UsersHistorySection from "./ChatComponents/usersHistorySection";
 import ConversationSection from "./ChatComponents/conversationSection";
 import MessageInputSection from "./ChatComponents/messageInputSection";
 
-const userId = sessionStorage.getItem("userId");
-
-const socket = io("http://localhost:3001", {
-  query: {
-    userId,
-  },
-});
-
-const Chat = () => {
+const Chat = ({ me }) => {
+  const [user] = useState(me);
   const [users, setUsers] = useState([]);
-
   const [selectedUser, setSelectedUser] = useState("");
-
   const [conversations, setConversations] = useState([]);
+  const location = useLocation();
 
-  useEffect(async () => {
-    socket.on(`message_${userId}`, (message) => {
+  const userId = user.id;
+  const socket = io("http://localhost:4000", {
+    query: {
+      userId,
+    },
+  });
+
+  useEffect(() => {
+    if (location.state) {
+      const { user } = location.state;
+      setUsers((prevUsers) => [...prevUsers, user]);
+      setSelectedUser(user);
+      setConversations((prevConversations) => [
+        ...prevConversations,
+        { ownersId: [userId, user.id], messages: [] },
+      ]);
+    }
+  }, [location.state, userId]);
+
+  useEffect(() => {
+    const handleMessage = async (message) => {
       const sender = message.sender;
       const text = message.text;
-      const updatedMessages = [
-        ...conversations.filter((conversation) =>
-          conversation.ownersId.includes(senderId),
-        )[0].messages,
-        { text, sender },
-      ];
-      setConversations(
-        conversations.map((conversation) =>
-          conversation.ownersId.includes(senderId)
-            ? { ...conversation, messages: updatedMessages }
-            : conversation,
-        ),
-      );
-    });
+      const userExists = users.some((user) => user.id === sender);
 
-    const response = await fetch(`http://localhost:4000/users/${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+      if (userExists) {
+        const updatedMessages = [
+          ...conversations
+            .filter((conversation) =>
+              conversation.ownersId.includes(sender),
+            )[0].messages,
+          { text, sender },
+        ];
+        setConversations((prevConversations) =>
+          prevConversations.map((conversation) =>
+            conversation.ownersId.includes(sender)
+              ? { ...conversation, messages: updatedMessages }
+              : conversation,
+          ),
+        );
+      } else {
+        const response = await fetch(`http://localhost:4000/user/${sender}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (response.ok) {
+          const newUser = await response.json();
+          setUsers((prevUsers) => [...prevUsers, newUser]);
+        }
+      }
+    };
 
-    if (response.ok) {
-      const users = await response.json();
-      setUsers(users);
-    }
+    socket.on(`message_${userId}`, handleMessage);
 
     return () => {
-      socket.off(`message_${userId}`);
+      socket.off(`message_${userId}`, handleMessage);
     };
-  }, []);
+  }, [conversations, userId, users, socket]);
 
   return (
     <Box
@@ -66,14 +84,15 @@ const Chat = () => {
         height: "500px",
       }}
     >
-      {/* Users History Section */}
       <UsersHistorySection
+        userId={userId}
         users={users}
+        setUsers={setUsers}
         selectedUser={selectedUser}
         setSelectedUser={setSelectedUser}
+        conversations={conversations}
+        setConversations={setConversations}
       />
-
-      {/* Conversation Section */}
       <Paper
         sx={{
           width: "70%",

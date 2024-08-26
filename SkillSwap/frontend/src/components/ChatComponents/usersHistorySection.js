@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   List,
   ListItem,
@@ -9,15 +9,31 @@ import {
 } from "@mui/material";
 
 const UsersHistorySection = ({
+  userId,
   users,
+  setUsers,
   selectedUser,
   setSelectedUser,
   conversations,
   setConversations,
 }) => {
+  useEffect(async () => {
+  const response = await fetch(`http://localhost:4000/connections/${userId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (response.ok) {
+    const newUsers = await response.json();
+    setUsers([...users, ...newUsers]);
+  }
+}, []);
+
   const handleUserSelect = async (user) => {
     const response = await fetch(
-      "http://loaclhost:4000/conversations/?users=[1, 2]",
+      `http://loaclhost:4000//conversation?userId1=${user.id}&userId2=${userId}`,
       {
         method: "GET",
         headers: {

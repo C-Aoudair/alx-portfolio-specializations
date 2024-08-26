@@ -20,8 +20,17 @@ import { useNavigate } from "react-router-dom";
 const ProfileOverlay = ({ user, onClose }) => {
   const navigate = useNavigate();
 
-  const handleChat = () => {
-    navigate("/chat");
+  const handleChat = async (userId) => {
+    const response = await fetch(`http://localhost:4000/user/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.ok) {
+      const user = await response.json();
+      navigate("/chat", { state: { user } });
+    }
   };
 
   return (
