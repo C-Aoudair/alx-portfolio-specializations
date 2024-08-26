@@ -2,35 +2,41 @@ import React, { useState } from "react";
 import { Box, TextField, IconButton } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
-
 const MessageInputSection = ({
   selectedUser,
   conversations,
   setConversations,
   socket,
+  userId,
 }) => {
   const [newMessage, setNewMessage] = useState("");
-
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (newMessage.trim()) {
+      const currentConv = conversations.find((conv) => (conv.ownersId.includes(selectedUser.userId)));
+	    if (currentConv) {
       const updatedMessages = [
-        ...conversations.filter((conversation) =>
-          conversation.ownersId.includes(selectedUser.id),
-        )[0].messages,
-        { text: newMessage, sender: 1 },
+	      ...currentConv.messages,
+        { text: newMessage, sender: userId },
       ];
-      setConversations(
-        conversations.map((conversation) =>
-          conversation.ownersId.includes(selectedUser.id)
+      setConversations((prevConversations) =>
+        prevConversations.map((conversation) =>
+          conversation.ownersId.includes(selectedUser.userId)
             ? { ...conversation, messages: updatedMessages }
-            : conversation,
-        ),
+            : conversation
+        )
       );
+} else {
+	      setConversations([{ownersId: [userId, selectedUser.userId],
+		      messages: [{text: newMessage, sender: userId}]
+	      }]);
+      }
+console.log(selectedUser.userId, newMessage, userId);
 
       socket.emit('sendMessage', {
-        id: selectedUser.id,
+        id: selectedUser.userId,
         message: newMessage,
       });
+console.log('new message has been sended');
 
       setNewMessage("");
     }

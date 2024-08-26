@@ -8,6 +8,7 @@ urlpatterns = [
     path('login/', login, name='login'),
     path('logout/', logout, name='logout'),
     path('change-password/', change_password, name='change-password'),
+    path('search/', search, name="search"),
     path('add-skill/', add_skill, name='add-skill'),
     path('delete-skill/<str:pk>/', delete_skill, name='delete-skill'),
     path('add-experience/', add_experience, name='add-experience'),

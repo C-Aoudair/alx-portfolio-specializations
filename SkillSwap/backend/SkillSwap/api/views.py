@@ -5,7 +5,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializer import *
+import requests
+import redis
 
+redisClient = redis.Redis()
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -37,8 +40,19 @@ def regester(request):
         refresh = RefreshToken.for_user(user)
         data["refresh"] = str(refresh)
         data["access"] = str(refresh.access_token)
+        redisClient.setex(data["id"], 86400, "logged")
+        requests.post(
+            'http://localhost:4000/create-user',
+            json={
+                'name': data['username'],
+                'userId': data['id'],
+                'online': True,
+                'connections': []
+            }
+        )
         return Response({"data": data}, status=status.HTTP_201_CREATED)
-    return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
+    print(serializer.errors)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
@@ -51,6 +65,7 @@ def login(request):
         refresh = RefreshToken.for_user(user)
         data["refresh"] = str(refresh)
         data["access"] = str(refresh.access_token)
+        redisClient.setex(data["id"], 86400, "logged")
         return Response({"data": data}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -87,7 +102,6 @@ def add_skill(request):
         user = request.user
         user.skills.add(new_skill)
         return Response({"newSkill": skill.data}, status=status.HTTP_201_CREATED)
-    print(skill.errors)
     return Response(skill.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -113,7 +127,6 @@ def add_experience(request):
         return Response(
             {"newExperience": experience.data}, status=status.HTTP_201_CREATED
         )
-    print(experience.errors)
     return Response(experience.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -124,15 +137,13 @@ def update_experience(request, pk):
     experience = Experience.objects.get(id=pk)
     experience_data = request.data
     experience = ExperienceSerializer(
-        instance=experience, data=experience_data['newExperience']
+        instance=experience, data=experience_data["newExperience"]
     )
     if experience.is_valid():
         experience.save()
-        print(experience.data)
         return Response(
             {"editedExperience": experience.data}, status=status.HTTP_201_CREATED
         )
-    print(experience.errors)
     return Response(experience.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -147,7 +158,8 @@ def delete_experience(request, pk):
         )
     except ObjectDoesNotExist:
         return Response(
-            {"message": "Experience does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            {"message": "Experience does not exist"}, status=status.HTTP_404_NOT_FOUND
+        )
 
 
 @api_view(["POST"])
@@ -163,4 +175,18 @@ def update_profile_image(request):
     user.save()
     return Response(
         {"message": "Profile image updated successfully"}, status=status.HTTP_200_OK
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def search(request):
+    skill = request.query_params.get("query")
+    users = User.objects.filter(skills__name=skill).exclude(id=request.user.id)
+    if users:
+        users = ProfileSerializer(users, many=True).data
+        return Response({"users": users}, status=status.HTTP_200_OK)
+    return Response(
+        {"message": "No user found with the given skill"},
+        status=status.HTTP_404_NOT_FOUND,
     )

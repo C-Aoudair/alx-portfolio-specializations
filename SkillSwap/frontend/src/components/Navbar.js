@@ -22,6 +22,7 @@ const Navbar = () => {
   const handleSearchClick = (e) => {
     if (searchTerm) {
       navigate('/search', { state: {searchQuery: searchTerm} });
+      setSearchTerm('');
     }
   };
 

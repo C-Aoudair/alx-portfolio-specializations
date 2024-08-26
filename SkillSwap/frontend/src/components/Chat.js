@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Box, Paper } from "@mui/material";
-import io from "socket.io-client";
 
 import UsersHistorySection from "./ChatComponents/usersHistorySection";
 import ConversationSection from "./ChatComponents/conversationSection";
 import MessageInputSection from "./ChatComponents/messageInputSection";
 
-const Chat = ({ me }) => {
+const Chat = ({ me, socket }) => {
   const [user] = useState(me);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
@@ -15,21 +14,20 @@ const Chat = ({ me }) => {
   const location = useLocation();
 
   const userId = user.id;
-  const socket = io("http://localhost:4000", {
-    query: {
-      userId,
-    },
-  });
 
   useEffect(() => {
     if (location.state) {
       const { user } = location.state;
-      setUsers((prevUsers) => [...prevUsers, user]);
+      let userExist = false;
+      users.forEach((existUser) => {
+        if (user.userId === existUser.userId) {
+          userExist = true;
+        }
+      });
+      if (!userExist) {
+        setUsers([...users, user]);
+      }
       setSelectedUser(user);
-      setConversations((prevConversations) => [
-        ...prevConversations,
-        { ownersId: [userId, user.id], messages: [] },
-      ]);
     }
   }, [location.state, userId]);
 
@@ -37,19 +35,17 @@ const Chat = ({ me }) => {
     const handleMessage = async (message) => {
       const sender = message.sender;
       const text = message.text;
-      const userExists = users.some((user) => user.id === sender);
-
+      const userExists = users.some((user) => user.userId === parseInt(sender));
       if (userExists) {
         const updatedMessages = [
-          ...conversations
-            .filter((conversation) =>
-              conversation.ownersId.includes(sender),
-            )[0].messages,
+          ...conversations.filter((conversation) =>
+            conversation.ownersId.includes(parseInt(sender)),
+          )[0].messages,
           { text, sender },
         ];
         setConversations((prevConversations) =>
           prevConversations.map((conversation) =>
-            conversation.ownersId.includes(sender)
+            conversation.ownersId.includes(parseInt(sender))
               ? { ...conversation, messages: updatedMessages }
               : conversation,
           ),
@@ -68,10 +64,10 @@ const Chat = ({ me }) => {
       }
     };
 
-    socket.on(`message_${userId}`, handleMessage);
+    socket.on(`receiveMessage_${userId}`, handleMessage);
 
     return () => {
-      socket.off(`message_${userId}`, handleMessage);
+      socket.off(`receiveMessage_${userId}`, handleMessage);
     };
   }, [conversations, userId, users, socket]);
 
@@ -111,6 +107,7 @@ const Chat = ({ me }) => {
           conversations={conversations}
           setConversations={setConversations}
           socket={socket}
+          userId={user.id}
         />
       </Paper>
     </Box>

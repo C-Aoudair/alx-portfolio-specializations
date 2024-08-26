@@ -22,34 +22,31 @@ const SearchResults = ({ user }) => {
   const [loading, setLoading] = useState(true);
 
   const location = useLocation();
-  const searchQurey = location.state.searchQuery;
+  const searchQuery = location.state?.searchQuery || "";
+
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(
-        `http://localhost:8000/api/search?query=${searchQurey}`,
+        `http://localhost:8000/api/search?query=${searchQuery}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("access-token")}`,
           },
-        },
+        }
       );
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users);
         setLoading(false);
+      } else {
+        setLoading(false);
       }
     };
     fetchData();
-  }, []);
-  if (loading) {
-    return (
-      <Typography variant="h4" gutterBottom>
-        No Results
-      </Typography>
-    );
-  }
+  }, [searchQuery]);
+
   const handleChat = async (userId) => {
     const response = await fetch(`http://localhost:4000/user/${userId}`, {
       method: "GET",
@@ -59,8 +56,7 @@ const SearchResults = ({ user }) => {
     });
     if (response.ok) {
       const user = await response.json();
-	    console.log(user);
-      navigate("/chat", { state	: { user } });
+      navigate("/chat", { state: { user } });
     }
   };
 
@@ -77,10 +73,45 @@ const SearchResults = ({ user }) => {
       <Typography variant="h4" gutterBottom>
         Search Results
       </Typography>
-      <Grid container spacing={3}>
-        {(loading ? Array.from(new Array(6)) : users).map((user, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index} mx="auto">
-            {user ? (
+      {loading ? (
+        <Grid container spacing={3}>
+          {Array.from(new Array(6)).map((_, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card
+                sx={{
+                  height: 350,
+                  p: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Skeleton variant="circular" width={80} height={80} animation="wave" />
+                <Box sx={{ mt: 2 }}>
+                  <Skeleton variant="text" width="80%" animation="wave" />
+                  <Skeleton variant="text" width="60%" animation="wave" />
+                  <Skeleton variant="text" width="40%" animation="wave" />
+                </Box>
+                <Divider />
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    p: 1,
+                    px: 4,
+                  }}
+                >
+                  <Skeleton variant="circular" width={40} height={40} animation="wave" />
+                  <Skeleton variant="circular" width={40} height={40} animation="wave" />
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <Grid container spacing={3}>
+          {users.map((user, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
               <Card
                 sx={{
                   height: 350,
@@ -146,51 +177,10 @@ const SearchResults = ({ user }) => {
                   </IconButton>
                 </Box>
               </Card>
-            ) : (
-              <Card
-                sx={{
-                  p: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Skeleton
-                  variant="circular"
-                  width={80}
-                  height={80}
-                  animation="wave"
-                />
-                <Skeleton variant="text" width="80%" animation="wave" />
-                <Skeleton variant="text" width="60%" animation="wave" />
-                <Skeleton variant="text" width="40%" animation="wave" />
-                <Divider />
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    p: 1,
-                    px: 4,
-                  }}
-                >
-                  <Skeleton
-                    variant="circular"
-                    width={40}
-                    height={40}
-                    animation="wave"
-                  />
-                  <Skeleton
-                    variant="circular"
-                    width={40}
-                    height={40}
-                    animation="wave"
-                  />
-                </Box>
-              </Card>
-            )}
-          </Grid>
-        ))}
-      </Grid>
+            </Grid>
+          ))}
+        </Grid>
+      )}
       {selectedUser && (
         <ProfileOverlay user={selectedUser} onClose={handleCloseOverlay} />
       )}
