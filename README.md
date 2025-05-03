@@ -1,4 +1,4 @@
-# SkillSwap
+# SkillsSwap
 
 SkillSwap is a full-stack web application designed to allow users to exchange services based on their skills. Users can offer services involving the skills they have, acquire services involving the skills they need, and negotiate exchanges through a real-time chat system. The platform features user profiles, skill matching, and a communication mechanism.
 
