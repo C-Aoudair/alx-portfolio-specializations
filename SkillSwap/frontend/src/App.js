@@ -33,7 +33,7 @@ function AppContent() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      {location.pathname !== "/login" && location.pathname !== "/signup" && (
+      {location.pathname !== "/login" && location.pathname !== "/signup" && location.pathname !== "/" && (
         <Navbar />
       )}
       <div style={{ padding: 20 }}>
