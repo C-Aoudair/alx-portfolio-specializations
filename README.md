@@ -16,7 +16,13 @@ SkillSwap is a full-stack web application designed to allow users to exchange se
 - [Contact](#contact)
 
 ## Live Demo
-[![Watch Demo](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Play_Icon.png/240px-Play_Icon.png)](https://drive.google.com/your-demo-link)
+<p align="center">
+  <a href="https://drive.google.com/your-demo-link">
+    <img src="https://img.icons8.com/color/240/youtube-play.png" alt="Watch Demo" />
+  </a>
+  <br />
+  <b>🎥 Click to watch the demo on Google Drive</b>
+</p>
 
 ## Overview
 SkillSwap facilitates the exchange of services between users by matching their skill sets. The platform allows users to:
