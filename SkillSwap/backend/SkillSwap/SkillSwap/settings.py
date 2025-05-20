@@ -32,6 +32,7 @@ AUTH_USER_MODEL = 'api.User'
 
 CORS_ALLOWED_ORIGINS = [
    "http://localhost:3000",  # React app's URL
+   "http://localhost",
 ]
 
 
