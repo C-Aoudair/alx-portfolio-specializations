@@ -17,11 +17,11 @@ SkillSwap is a full-stack web application designed to allow users to exchange se
 
 ## Live Demo
 <p align="center">
-  <a href="https://drive.google.com/your-demo-link">
+  <a href="https://drive.google.com/file/d/16-skfCuUp9BVxxRUQKf0-hIaFwTMaEyM/view?usp=drive_link">
     <img src="https://img.icons8.com/color/240/youtube-play.png" alt="Watch Demo" />
   </a>
   <br />
-  <b>🎥 Click to watch the demo on Google Drive</b>
+  <b>🎥 Click to watch the demo</b>
 </p>
 
 ## Overview
